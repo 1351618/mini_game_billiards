@@ -1,0 +1,19 @@
+.canvasWin {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.canvas {
+  background-color: var(--aPoolTable);
+  border-radius: 4%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
