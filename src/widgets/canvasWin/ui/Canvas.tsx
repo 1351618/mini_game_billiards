@@ -26,61 +26,107 @@ const Canvas = () => {
     { color: "#98009b", x: 200, y: 216, show: true, speedX: 0, speedY: 0 },
     { color: "#e5e5e5", x: 200, y: 600, show: true, speedX: 0, speedY: 0 },
   ]);
+
+  // получение данных курсора  ++++++++++++++++++++++++++++++++++++++++++++++
+  const mousePos = useMouseTracker(canvasRef);
+  useEffect(() => {
+    if (mousePos.LeftBut) {
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        return;
+      }
+      const canvasRect = canvas.getBoundingClientRect();
+      const clickX = mousePos.x - canvasRect.left;
+      const clickY = mousePos.y - canvasRect.top;
+
+      // Переберите все шары и проверьте, попадает ли клик в какой-либо из них
+      ballPosition.forEach((val) => {
+        const circleRadius = 20; // Радиус шара
+        const circleCenterX = val.x;
+        const circleCenterY = val.y;
+
+        // Рассчитываем расстояние между центром шара и точкой клика
+        const distance = Math.sqrt(
+          Math.pow(clickX - circleCenterX, 2) +
+            Math.pow(clickY - circleCenterY, 2)
+        );
+
+        // Если расстояние меньше радиуса шара, значит клик попал внутрь шара
+        if (distance <= circleRadius) {
+          console.log("Клик попал в шар:", val.color);
+        } else {
+          console.log("---- вне круга");
+        }
+      });
+    }
+  }, [mousePos]);
+
+  // useEffect(() => {
+  //   if (mousePos.LeftBut) {
+  //     console.log("курсор", mousePos.LeftBut, mousePos.x - 50, mousePos.y - 50); // {x: 1093, y: 627, speedX: 3, speedY: 0, LeftBut: false}
+  //     // const canvas = canvasRef.current;
+  //     // const circleRadius = 20; // радиус круга
+
+  //     // console.log(canvas);
+  //     // if (!canvas) {
+  //     //   return;
+  //     // }
+  //     // const canvasRect = canvas.getBoundingClientRect();
+  //     // console.log("canv X:", canvasRect.left + 200, " Y:", canvasRect.top);
+
+  //     // // Координаты центра круга и его радиус
+  //     // let circleCenterX = 0;
+  //     // let circleCenterY = 0;
+  //     ballPosition.forEach((val) => {
+  //       //   circleCenterX = val.x;
+  //       //   circleCenterY = val.y;
+  //       console.log("шар", val.x, val.y);
+
+  //       //   // Координаты клика мыши
+  //       //   const clickX = mousePos.x - canvasRect.left;
+  //       //   const clickY = mousePos.y - canvasRect.top;
+  //       //   console.log("мышь", clickX, clickY);
+
+  //       //   // Рассчитываем расстояние между центром круга и точкой клика
+  //       // const distance = Math.sqrt(
+  //       //   Math.pow(clickX - circleCenterX, 2) +
+  //       //     Math.pow(clickY - circleCenterY, 2)
+  //       // );
+
+  //       //   // Проверяем, находится ли точка клика внутри круга
+  //       // if (distance <= circleRadius) {
+  //       //   console.log("++++ внутри круга ++++++++++++++++++++++++++++");
+  //       // } else {
+  //       //   console.log("---- вне круга");
+  //       // }
+  //     });
+  //     // console.log("00000000000000000000000000000000");
+  //   }
+  // }, [mousePos]);
+
+  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) {
       return;
     }
 
-    const context = canvas.getContext("2d");
-    if (!context) {
-      return;
-    }
-
-    let lastInteractionTime = 0;
-
-    const handleMouseMove = (event: MouseEvent) => {
-      const currentTime = new Date().getTime();
-      const timeSinceLastInteraction = currentTime - lastInteractionTime;
-
-      if (timeSinceLastInteraction < 80) {
-        return;
-      }
-
-      const mouseX = event.clientX - canvas.offsetLeft;
-      const mouseY = event.clientY - canvas.offsetTop;
-
-      const leftButtonPressed = event.buttons === 1;
-
-      ballPosition.forEach((ball) => {
-        const ballRadius = 20;
-
-        const distanceX = mouseX - ball.x;
-        const distanceY = mouseY - ball.y;
-        const distance = Math.sqrt(
-          distanceX * distanceX + distanceY * distanceY
-        );
-
-        if (distance <= ballRadius) {
-          if (leftButtonPressed) {
-            ball.speedX = mouseX - ball.x;
-            ball.speedY = mouseY - ball.y;
-          }
-          console.log("Курсор с зажатой клавишей касается шара!");
-        }
-      });
-
-      if (leftButtonPressed) {
-        lastInteractionTime = currentTime;
-      }
+    const handleMouseEnter = () => {
+      canvas.style.cursor = "crosshair";
     };
 
-    canvas.addEventListener("mousemove", handleMouseMove);
+    const handleMouseLeave = () => {
+      canvas.style.cursor = "default";
+    };
+
+    canvas.addEventListener("mouseenter", handleMouseEnter);
+    canvas.addEventListener("mouseleave", handleMouseLeave);
 
     return () => {
-      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseenter", handleMouseEnter);
+      canvas.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, [canvasRef, ballPosition]);
+  }, [canvasRef]);
 
   const checkHoleCollision = useCallback(() => {
     setBallPosition((prevPositions) => {

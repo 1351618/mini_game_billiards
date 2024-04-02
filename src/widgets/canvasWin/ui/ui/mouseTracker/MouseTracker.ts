@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, RefObject } from "react";
 
 interface MouseTp {
   x: number;
@@ -8,7 +8,7 @@ interface MouseTp {
   LeftBut: boolean;
 }
 
-const useMouseTracker = () => {
+const useMouseTracker = (canvasRef: RefObject<HTMLCanvasElement>) => {
   const [mousePos, setMousePos] = useState<MouseTp>({
     x: 0,
     y: 0,
@@ -37,28 +37,46 @@ const useMouseTracker = () => {
         ? (event.clientY - prevMousePos.y) / deltaTime / 1000
         : 0;
 
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        return;
+      }
+
+      const canvasRect = canvas.getBoundingClientRect();
+      const mouseX = event.clientX - canvasRect.left;
+      const mouseY = event.clientY - canvasRect.top;
+
       setMousePos({
-        x: event.clientX,
-        y: event.clientY,
+        x: mouseX,
+        y: mouseY,
         speedX,
         speedY,
         LeftBut: event.buttons === 1, // 1 represents the left mouse button being pressed
       });
 
       setPrevMousePos({
-        x: event.clientX,
-        y: event.clientY,
+        x: mouseX,
+        y: mouseY,
         time: currentTime,
         LeftBut: event.buttons === 1,
       });
     };
 
+    const handleMouseDown = (event: MouseEvent) => {
+      if (event.buttons === 1) {
+        // Check if left mouse button is pressed
+        handleMouseEvent(event);
+      }
+    };
+
     document.addEventListener("mousemove", handleMouseEvent);
+    document.addEventListener("mousedown", handleMouseDown);
 
     return () => {
       document.removeEventListener("mousemove", handleMouseEvent);
+      document.removeEventListener("mousedown", handleMouseDown);
     };
-  }, [prevMousePos]);
+  }, [canvasRef, prevMousePos]);
 
   return mousePos;
 };
