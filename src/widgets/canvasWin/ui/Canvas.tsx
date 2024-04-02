@@ -2,7 +2,6 @@ import cls from "./canvas.module.scss";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawBorder, holes, ball } from "./ui/canvasUtils/canvasUtils";
 import useMouseTracker from "./ui/mouseTracker/MouseTracker";
-// import { moveBall, speedX, speedY } from "./ui/canvasLogics/canvasLogics";
 
 type CanvasSize = { width: number; height: number };
 
@@ -29,80 +28,72 @@ const Canvas = () => {
 
   // получение данных курсора  ++++++++++++++++++++++++++++++++++++++++++++++
   const mousePos = useMouseTracker(canvasRef);
+  const [stopChecking, setStopChecking] = useState(false);
+
   useEffect(() => {
-    if (mousePos.LeftBut) {
+    console.log(mousePos);
+    if (mousePos.LeftBut && !stopChecking) {
       const canvas = canvasRef.current;
-      if (!canvas) {
-        return;
-      }
-      const canvasRect = canvas.getBoundingClientRect();
-      const clickX = mousePos.x - canvasRect.left;
-      const clickY = mousePos.y - canvasRect.top;
+      if (!canvas) return;
 
-      // Переберите все шары и проверьте, попадает ли клик в какой-либо из них
-      ballPosition.forEach((val) => {
-        const circleRadius = 20; // Радиус шара
-        const circleCenterX = val.x;
-        const circleCenterY = val.y;
+      const { width: canvasWidth, height: canvasHeight } =
+        canvas.getBoundingClientRect();
+      const { x: clickX, y: clickY } = mousePos;
 
-        // Рассчитываем расстояние между центром шара и точкой клика
-        const distance = Math.sqrt(
-          Math.pow(clickX - circleCenterX, 2) +
-            Math.pow(clickY - circleCenterY, 2)
+      let cursorInsideAnyBall = false;
+
+      ballPosition.forEach((val, ind) => {
+        const recalculatedX = (val.x + 50) / (canvasSize.width / canvasWidth);
+        const recalculatedY = (val.y + 50) / (canvasSize.height / canvasHeight);
+        const ballRadius = 20 / (canvasSize.width / canvasWidth);
+
+        const distanceToCursor = Math.sqrt(
+          (clickX - recalculatedX) ** 2 + (clickY - recalculatedY) ** 2
         );
 
-        // Если расстояние меньше радиуса шара, значит клик попал внутрь шара
-        if (distance <= circleRadius) {
-          console.log("Клик попал в шар:", val.color);
-        } else {
-          console.log("---- вне круга");
+        if (distanceToCursor <= ballRadius) {
+          console.log("Курсор попал в шар! ++++++++++++++++++", ind);
+          cursorInsideAnyBall = true;
         }
       });
+
+      if (!cursorInsideAnyBall) {
+        ballPosition.forEach((val, ind) => {
+          const recalculatedX = (val.x + 50) / (canvasSize.width / canvasWidth);
+          const recalculatedY =
+            (val.y + 50) / (canvasSize.height / canvasHeight);
+          const ballRadius = 21 / (canvasSize.width / canvasWidth);
+
+          const distanceToCursor = Math.sqrt(
+            (clickX - recalculatedX) ** 2 + (clickY - recalculatedY) ** 2
+          );
+
+          if (distanceToCursor <= ballRadius * 1.1 && mousePos.LeftBut) {
+            console.log(
+              "Курсор подведен к шару снаружи.",
+              ind,
+              mousePos.speedX,
+              mousePos.speedY
+            );
+
+            // Обновляем скорость шара
+            const newBallPosition = [...ballPosition];
+            newBallPosition[ind] = {
+              ...newBallPosition[ind],
+              speedX: mousePos.speedY,
+              speedY: mousePos.speedX,
+            };
+            setBallPosition(newBallPosition);
+
+            setStopChecking(true);
+            setTimeout(() => {
+              setStopChecking(false);
+            }, 1000);
+          }
+        });
+      }
     }
   }, [mousePos]);
-
-  // useEffect(() => {
-  //   if (mousePos.LeftBut) {
-  //     console.log("курсор", mousePos.LeftBut, mousePos.x - 50, mousePos.y - 50); // {x: 1093, y: 627, speedX: 3, speedY: 0, LeftBut: false}
-  //     // const canvas = canvasRef.current;
-  //     // const circleRadius = 20; // радиус круга
-
-  //     // console.log(canvas);
-  //     // if (!canvas) {
-  //     //   return;
-  //     // }
-  //     // const canvasRect = canvas.getBoundingClientRect();
-  //     // console.log("canv X:", canvasRect.left + 200, " Y:", canvasRect.top);
-
-  //     // // Координаты центра круга и его радиус
-  //     // let circleCenterX = 0;
-  //     // let circleCenterY = 0;
-  //     ballPosition.forEach((val) => {
-  //       //   circleCenterX = val.x;
-  //       //   circleCenterY = val.y;
-  //       console.log("шар", val.x, val.y);
-
-  //       //   // Координаты клика мыши
-  //       //   const clickX = mousePos.x - canvasRect.left;
-  //       //   const clickY = mousePos.y - canvasRect.top;
-  //       //   console.log("мышь", clickX, clickY);
-
-  //       //   // Рассчитываем расстояние между центром круга и точкой клика
-  //       // const distance = Math.sqrt(
-  //       //   Math.pow(clickX - circleCenterX, 2) +
-  //       //     Math.pow(clickY - circleCenterY, 2)
-  //       // );
-
-  //       //   // Проверяем, находится ли точка клика внутри круга
-  //       // if (distance <= circleRadius) {
-  //       //   console.log("++++ внутри круга ++++++++++++++++++++++++++++");
-  //       // } else {
-  //       //   console.log("---- вне круга");
-  //       // }
-  //     });
-  //     // console.log("00000000000000000000000000000000");
-  //   }
-  // }, [mousePos]);
 
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   useEffect(() => {
@@ -187,36 +178,38 @@ const Canvas = () => {
           // Проверяем столкновение с другими шарами
           prevPositions.forEach((otherPos, otherIndex) => {
             if (otherIndex !== index && otherPos.show) {
-              const dx = vPos.x - otherPos.x;
-              const dy = vPos.y - otherPos.y;
-              const distance = Math.sqrt(dx * dx + dy * dy);
-              if (distance < 40) {
-                // Вычисляем вектор смещения для каждого шара
-                const moveX = dx * 0.05; // Уменьшаем величину смещения
-                const moveY = dy * 0.05; // Уменьшаем величину смещения
+              if (vPos.show && otherPos.show) {
+                const dx = vPos.x - otherPos.x;
+                const dy = vPos.y - otherPos.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 40) {
+                  // Вычисляем вектор смещения для каждого шара
+                  const moveX = dx * 0.05; // Уменьшаем величину смещения
+                  const moveY = dy * 0.05; // Уменьшаем величину смещения
 
-                // Смещаем каждый шар на четверть вектора смещения
-                vPos.x += moveX / 6; // Уменьшаем величину смещения
-                vPos.y += moveY / 6; // Уменьшаем величину смещения
-                otherPos.x -= moveX / 6; // Уменьшаем величину смещения
-                otherPos.y -= moveY / 6; // Уменьшаем величину смещения
+                  // Смещаем каждый шар на четверть вектора смещения
+                  vPos.x += moveX / 6; // Уменьшаем величину смещения
+                  vPos.y += moveY / 6; // Уменьшаем величину смещения
+                  otherPos.x -= moveX / 6; // Уменьшаем величину смещения
+                  otherPos.y -= moveY / 6; // Уменьшаем величину смещения
 
-                // Вычисляем угол столкновения
-                const angle = Math.atan2(dy, dx);
+                  // Вычисляем угол столкновения
+                  const angle = Math.atan2(dy, dx);
 
-                const newSpeed =
-                  Math.sqrt(
-                    (vPos.speedX + otherPos.speedX) *
-                      (vPos.speedX + otherPos.speedX) +
-                      (vPos.speedY + otherPos.speedY) *
-                        (vPos.speedY + otherPos.speedY)
-                  ) * 0.5; // Половина суммы скоростей
+                  const newSpeed =
+                    Math.sqrt(
+                      (vPos.speedX + otherPos.speedX) *
+                        (vPos.speedX + otherPos.speedX) +
+                        (vPos.speedY + otherPos.speedY) *
+                          (vPos.speedY + otherPos.speedY)
+                    ) * 0.5; // Половина суммы скоростей
 
-                // Устанавливаем новые значения скоростей для каждого шара
-                vPos.speedX = Math.cos(angle) * newSpeed;
-                vPos.speedY = Math.sin(angle) * newSpeed;
-                otherPos.speedX = Math.cos(angle + Math.PI) * newSpeed;
-                otherPos.speedY = Math.sin(angle + Math.PI) * newSpeed;
+                  // Устанавливаем новые значения скоростей для каждого шара
+                  vPos.speedX = Math.cos(angle) * newSpeed;
+                  vPos.speedY = Math.sin(angle) * newSpeed;
+                  otherPos.speedX = Math.cos(angle + Math.PI) * newSpeed;
+                  otherPos.speedY = Math.sin(angle + Math.PI) * newSpeed;
+                }
               }
             }
           });

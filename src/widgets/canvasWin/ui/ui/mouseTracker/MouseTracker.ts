@@ -31,10 +31,10 @@ const useMouseTracker = (canvasRef: RefObject<HTMLCanvasElement>) => {
         : 0;
 
       const speedX = prevMousePos
-        ? (event.clientX - prevMousePos.x) / deltaTime / 1000
+        ? (event.clientX - prevMousePos.x) / deltaTime / 10000
         : 0;
       const speedY = prevMousePos
-        ? (event.clientY - prevMousePos.y) / deltaTime / 1000
+        ? (event.clientY - prevMousePos.y) / deltaTime / 10000
         : 0;
 
       const canvas = canvasRef.current;
