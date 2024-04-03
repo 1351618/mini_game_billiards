@@ -2,6 +2,7 @@ import cls from "./canvas.module.scss";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawBorder, holes, ball } from "./ui/canvasUtils/canvasUtils";
 import useMouseTracker from "./ui/mouseTracker/MouseTracker";
+import { ballCollor, ballPositionData } from "./ui/canvasLogics/canvasLogics";
 
 type CanvasSize = { width: number; height: number };
 
@@ -12,26 +13,24 @@ const Canvas = () => {
     height: 800,
   });
 
-  const [ballPosition, setBallPosition] = useState([
-    { color: "#3e1e00", x: 135, y: 102, show: true, speedX: 0, speedY: 0 },
-    { color: "#54d53b", x: 178, y: 102, show: true, speedX: 0, speedY: 0 },
-    { color: "#115f00", x: 222, y: 102, show: true, speedX: 0, speedY: 0 },
-    { color: "#a81616", x: 264, y: 102, show: true, speedX: 0, speedY: 0 },
-    { color: "#fcd423", x: 157, y: 140, show: true, speedX: 0, speedY: 0 },
-    { color: "#000000", x: 200, y: 140, show: true, speedX: 0, speedY: 0 },
-    { color: "#d47979", x: 243, y: 140, show: true, speedX: 0, speedY: 0 },
-    { color: "#c47500", x: 178, y: 178, show: true, speedX: 0, speedY: 0 },
-    { color: "#0000c4", x: 222, y: 178, show: true, speedX: 0, speedY: 0 },
-    { color: "#98009b", x: 200, y: 216, show: true, speedX: 0, speedY: 0 },
-    { color: "#e5e5e5", x: 200, y: 600, show: true, speedX: 0, speedY: 0 },
-  ]);
-
-  // получение данных курсора  ++++++++++++++++++++++++++++++++++++++++++++++
+  const [ballPosition, setBallPosition] = useState(ballPositionData);
   const mousePos = useMouseTracker(canvasRef);
   const [stopChecking, setStopChecking] = useState(false);
+  const [isColorSelectWin, setColorSelectWin] = useState(false);
+  const [isChosenBall, setChosenBall] = useState(0);
+
+  const handleColorSelect = (ballColor: number) => {
+    setColorSelectWin(false);
+    const updatedBallPosition = [...ballPosition];
+    updatedBallPosition[isChosenBall] = {
+      ...updatedBallPosition[isChosenBall],
+      color: ballCollor[ballColor],
+    };
+    setBallPosition(updatedBallPosition);
+  };
 
   useEffect(() => {
-    console.log(mousePos);
+    // console.log(mousePos);
     if (mousePos.LeftBut && !stopChecking) {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -45,14 +44,16 @@ const Canvas = () => {
       ballPosition.forEach((val, ind) => {
         const recalculatedX = (val.x + 50) / (canvasSize.width / canvasWidth);
         const recalculatedY = (val.y + 50) / (canvasSize.height / canvasHeight);
-        const ballRadius = 20 / (canvasSize.width / canvasWidth);
+        const ballRadius = 10 / (canvasSize.width / canvasWidth);
 
         const distanceToCursor = Math.sqrt(
           (clickX - recalculatedX) ** 2 + (clickY - recalculatedY) ** 2
         );
 
         if (distanceToCursor <= ballRadius) {
-          console.log("Курсор попал в шар! ++++++++++++++++++", ind);
+          // console.log("Курсор попал в шар! ++++++++++++++++++", ind);
+          setColorSelectWin(true);
+          setChosenBall(ind);
           cursorInsideAnyBall = true;
         }
       });
@@ -69,19 +70,28 @@ const Canvas = () => {
           );
 
           if (distanceToCursor <= ballRadius * 1.1 && mousePos.LeftBut) {
-            console.log(
-              "Курсор подведен к шару снаружи.",
-              ind,
-              mousePos.speedX,
-              mousePos.speedY
-            );
+            // console.log(
+            //   "Курсор подведен к шару снаружи.",
+            //   ind,
+            //   mousePos.speedX,
+            //   mousePos.speedY
+            // );
+
+            const newSpeedX =
+              mousePos.directionX === "right"
+                ? mousePos.speedX
+                : -mousePos.speedX; // Устанавливаем новую скорость по оси X
+            const newSpeedY =
+              mousePos.directionY === "down"
+                ? mousePos.speedY
+                : -mousePos.speedY; // Устанавливаем новую скорость по оси Y
 
             // Обновляем скорость шара
             const newBallPosition = [...ballPosition];
             newBallPosition[ind] = {
               ...newBallPosition[ind],
-              speedX: mousePos.speedY,
-              speedY: mousePos.speedX,
+              speedX: newSpeedX,
+              speedY: newSpeedY,
             };
             setBallPosition(newBallPosition);
 
@@ -129,12 +139,12 @@ const Canvas = () => {
 
         const holeRadius = 10; // Радиус лунки
         const holePositions = [
-          { x: 0, y: 0 }, // Позиция первой лунки
-          { x: canvas.width - 35, y: 35 }, // Позиция второй лунки
-          { x: 35, y: canvas.height / 2 }, // Позиция третьей лунки
-          { x: canvas.width - 35, y: canvas.height / 2 }, // Позиция четвертой лунки
-          { x: 35, y: canvas.height - 35 }, // Позиция пятой лунки
-          { x: canvas.width - 35, y: canvas.height - 35 }, // Позиция шестой лунки
+          { x: -20, y: -20 },
+          { x: -20, y: canvas.height / 2 - 20 },
+          { x: -20, y: canvas.height - 100 },
+          { x: canvas.width - 100, y: -20 },
+          { x: canvas.width - 100, y: canvas.height / 2 - 80 },
+          { x: canvas.width - 100, y: canvas.height - 100 },
         ];
 
         holePositions.forEach((holePos) => {
@@ -240,8 +250,8 @@ const Canvas = () => {
     };
   }, []); // Пустой массив зависимостей, чтобы эффект запускался только один раз при монтировании
 
+  // Вызываем функцию moveBall для обновления позиции шара
   useEffect(() => {
-    // Вызываем функцию moveBall для обновления позиции шара
     moveBall();
   }, [moveBall]);
 
@@ -257,15 +267,11 @@ const Canvas = () => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
-    }
+    if (!canvas) return;
     const context = canvas.getContext("2d");
-    if (!context) {
-      return;
-    }
-    // Очистка канваса
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    if (!context) return;
+
+    context.clearRect(0, 0, canvas.width, canvas.height); // Очистка канваса
 
     drawBorder(context, "#3e1e00", 60, canvasSize.width, canvasSize.height); // рамка
     holes(context, canvasSize); // лунки
@@ -285,6 +291,21 @@ const Canvas = () => {
         width={canvasSize.width}
         height={canvasSize.height}
       />
+      <div
+        className={`${cls.colorSelectWin} ${isColorSelectWin ? "" : cls.hide}`}
+      >
+        {ballCollor.map((val, ind) => (
+          <button
+            key={ind}
+            className={cls.colorBall}
+            style={{ backgroundColor: val }}
+            onClick={() => handleColorSelect(ind)}
+          >
+            &nbsp;
+          </button>
+        ))}
+        <button onClick={() => setColorSelectWin(false)}>&#128683;</button>
+      </div>
     </div>
   );
 };

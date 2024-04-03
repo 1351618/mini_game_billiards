@@ -1,4 +1,4 @@
-import { useEffect, useState, RefObject } from "react";
+import { useEffect, useState, useRef, RefObject } from "react";
 
 interface MouseTp {
   x: number;
@@ -6,6 +6,8 @@ interface MouseTp {
   speedX: number;
   speedY: number;
   LeftBut: boolean;
+  directionX: string; // Направление движения по горизонтали
+  directionY: string; // Направление движения по вертикали
 }
 
 const useMouseTracker = (canvasRef: RefObject<HTMLCanvasElement>) => {
@@ -15,26 +17,25 @@ const useMouseTracker = (canvasRef: RefObject<HTMLCanvasElement>) => {
     speedX: 0,
     speedY: 0,
     LeftBut: false,
+    directionX: "none", // По умолчанию направление неопределено
+    directionY: "none",
   });
-  const [prevMousePos, setPrevMousePos] = useState<{
-    x: number;
-    y: number;
-    time: number;
-    LeftBut: boolean;
-  } | null>(null);
+  const prevMousePos = useRef<{ x: number; y: number; time: number } | null>(
+    null
+  );
 
   useEffect(() => {
     const handleMouseEvent = (event: MouseEvent) => {
       const currentTime = new Date().getTime();
-      const deltaTime = prevMousePos
-        ? (currentTime - prevMousePos.time) / 1000
+      const deltaTime = prevMousePos.current
+        ? (currentTime - prevMousePos.current.time) / 1000
         : 0;
 
-      const speedX = prevMousePos
-        ? (event.clientX - prevMousePos.x) / deltaTime / 10000
+      const speedX = prevMousePos.current
+        ? (event.clientX - prevMousePos.current.x) / deltaTime / 10000
         : 0;
-      const speedY = prevMousePos
-        ? (event.clientY - prevMousePos.y) / deltaTime / 10000
+      const speedY = prevMousePos.current
+        ? (event.clientY - prevMousePos.current.y) / deltaTime / 1000
         : 0;
 
       const canvas = canvasRef.current;
@@ -46,20 +47,32 @@ const useMouseTracker = (canvasRef: RefObject<HTMLCanvasElement>) => {
       const mouseX = event.clientX - canvasRect.left;
       const mouseY = event.clientY - canvasRect.top;
 
+      const directionX = prevMousePos.current
+        ? mouseX > prevMousePos.current.x
+          ? "right"
+          : "left"
+        : "none";
+      const directionY = prevMousePos.current
+        ? mouseY > prevMousePos.current.y
+          ? "down"
+          : "up"
+        : "none";
+
       setMousePos({
         x: mouseX,
         y: mouseY,
         speedX,
         speedY,
         LeftBut: event.buttons === 1, // 1 represents the left mouse button being pressed
+        directionX,
+        directionY,
       });
 
-      setPrevMousePos({
+      prevMousePos.current = {
         x: mouseX,
         y: mouseY,
         time: currentTime,
-        LeftBut: event.buttons === 1,
-      });
+      };
     };
 
     const handleMouseDown = (event: MouseEvent) => {
@@ -76,7 +89,7 @@ const useMouseTracker = (canvasRef: RefObject<HTMLCanvasElement>) => {
       document.removeEventListener("mousemove", handleMouseEvent);
       document.removeEventListener("mousedown", handleMouseDown);
     };
-  }, [canvasRef, prevMousePos]);
+  }, [canvasRef]);
 
   return mousePos;
 };

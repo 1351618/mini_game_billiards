@@ -1,29 +1,40 @@
-// canvasLogics.ts
+export const ballCollor = [
+  "#000000",
+  "#ffffff",
+  "#fcd423",
+  "#233ffc",
+  "#4cfc23",
+  "#115f00",
+  "#ff8300",
+  "#800080",
+  "#008080",
+  "#ff00ff",
+  "#ffff00",
+  "#00ffff",
+  "#800000",
+  "#008000",
+  "#000080",
+  "#808000",
+  "#808080",
+  "#8000ff",
+  "#ff0080",
+  "#00ff00",
+  "#0000ff",
+  "#ff8000",
+  "#0080ff",
+  "#ff0000",
+];
 
-// export let speedX = 1;
-// export let speedY = 1;
-
-// export const moveBall = (
-//   ballPosition: { x: number; y: number },
-//   canvas: HTMLCanvasElement | null
-// ) => {
-//   return () => {
-//     setBallPosition((prevPosition) => {
-//       let newX = prevPosition.x + speedX;
-//       let newY = prevPosition.y + speedY;
-
-//       if (canvas) {
-//         if (newX >= canvas.width - 100 || newX <= 0) {
-//           speedX *= -1;
-//         }
-//         if (newY >= canvas.height - 100 || newY <= 0) {
-//           speedY *= -1;
-//         }
-//         newX = prevPosition.x + speedX;
-//         newY = prevPosition.y + speedY;
-//       }
-
-//       return { x: newX, y: newY };
-//     });
-//   };
-// };
+export const ballPositionData = [
+  { color: "#3e1e00", x: 135, y: 102, show: true, speedX: 0, speedY: 0 },
+  { color: "#54d53b", x: 178, y: 102, show: true, speedX: 0, speedY: 0 },
+  { color: "#115f00", x: 222, y: 102, show: true, speedX: 0, speedY: 0 },
+  { color: "#a81616", x: 264, y: 102, show: true, speedX: 0, speedY: 0 },
+  { color: "#fcd423", x: 157, y: 140, show: true, speedX: 0, speedY: 0 },
+  { color: "#000000", x: 200, y: 140, show: true, speedX: 0, speedY: 0 },
+  { color: "#d47979", x: 243, y: 140, show: true, speedX: 0, speedY: 0 },
+  { color: "#c47500", x: 178, y: 178, show: true, speedX: 0, speedY: 0 },
+  { color: "#0000c4", x: 222, y: 178, show: true, speedX: 0, speedY: 0 },
+  { color: "#98009b", x: 200, y: 216, show: true, speedX: 0, speedY: 0 },
+  { color: "#e5e5e5", x: 200, y: 600, show: true, speedX: 0, speedY: 0 },
+];
