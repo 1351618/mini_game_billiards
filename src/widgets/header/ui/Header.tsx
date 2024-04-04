@@ -9,7 +9,7 @@ import billiardLengSvg from "./billiard_leng.svg";
 import billiardsBcSvg from "./billiards_bc.svg";
 
 export const Header = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const languagesArray = ["ru", "en", "cn"];
   const [counter, setCounter] = useState(0);
   const { changeTheme } = useTheme();
