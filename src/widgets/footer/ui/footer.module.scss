@@ -6,4 +6,31 @@
   margin-top: 2px;
   display: flex;
   justify-content: space-around;
+  flex-direction: row;
+  flex-wrap: wrap;
+  a {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    img {
+      height: 24px;
+      background-color: #fff;
+      border-radius: 50%;
+      box-shadow: inset -2px -2px 9px rgba(0, 0, 0, 0.4901960784),
+        inset -2px -2px 5px rgba(0, 0, 0, 0.4901960784);
+      border: none;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        box-shadow: inset -5px -5px 13px #0000007d,
+          inset -3px -3px 4px #0000007d, 0px 0px 11px #ffffff;
+      }
+    }
+  }
 }

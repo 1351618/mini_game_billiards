@@ -21,7 +21,7 @@ export const Header = () => {
   };
 
   useEffect(() => {
-    handleResize(); // Вызываем функцию обработчика события при первой отрисовке
+    handleResize();
     globalThis.addEventListener("resize", handleResize);
 
     return () => {

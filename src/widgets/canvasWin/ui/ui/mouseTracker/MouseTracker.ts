@@ -6,8 +6,8 @@ interface MouseTp {
   speedX: number;
   speedY: number;
   LeftBut: boolean;
-  directionX: string; // Направление движения по горизонтали
-  directionY: string; // Направление движения по вертикали
+  directionX: string;
+  directionY: string;
 }
 
 const useMouseTracker = (canvasRef: RefObject<HTMLCanvasElement>) => {
@@ -17,7 +17,7 @@ const useMouseTracker = (canvasRef: RefObject<HTMLCanvasElement>) => {
     speedX: 0,
     speedY: 0,
     LeftBut: false,
-    directionX: "none", // По умолчанию направление неопределено
+    directionX: "none",
     directionY: "none",
   });
   const prevMousePos = useRef<{ x: number; y: number; time: number } | null>(
@@ -39,9 +39,7 @@ const useMouseTracker = (canvasRef: RefObject<HTMLCanvasElement>) => {
         : 0;
 
       const canvas = canvasRef.current;
-      if (!canvas) {
-        return;
-      }
+      if (!canvas) return;
 
       const canvasRect = canvas.getBoundingClientRect();
       const mouseX = event.clientX - canvasRect.left;
@@ -63,7 +61,7 @@ const useMouseTracker = (canvasRef: RefObject<HTMLCanvasElement>) => {
         y: mouseY,
         speedX,
         speedY,
-        LeftBut: event.buttons === 1, // 1 represents the left mouse button being pressed
+        LeftBut: event.buttons === 1,
         directionX,
         directionY,
       });
@@ -77,7 +75,6 @@ const useMouseTracker = (canvasRef: RefObject<HTMLCanvasElement>) => {
 
     const handleMouseDown = (event: MouseEvent) => {
       if (event.buttons === 1) {
-        // Check if left mouse button is pressed
         handleMouseEvent(event);
       }
     };

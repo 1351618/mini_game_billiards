@@ -1,4 +1,4 @@
-export const ballCollor = [
+export const ballCollorData = [
   "#000000",
   "#ffffff",
   "#fcd423",
