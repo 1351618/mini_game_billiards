@@ -29,7 +29,7 @@ export const Header = () => {
     };
   }, []);
 
-  // ! при клике на смену языка после загрузки - срабатывает со второго раза
+  //// ! при клике на смену языка после загрузки - срабатывает со второго раза
   counter === languagesArray.length ? setCounter(0) : null;
 
   const toggle = async (): Promise<void> => {
